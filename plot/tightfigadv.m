@@ -62,14 +62,24 @@ htxPar = get(htx, 'Parent');
 % later
 origaxunits = get(hax, 'Units');
 origtxunits = get(htx, 'Units');
-origtxparunits = cellfun(@(x) x.Units, htxPar, 'un', 0);
+if numel(htxPar) > 1
+    origtxparunits = cellfun(@(x) x.Units, htxPar, 'un', 0);
+elseif numel(htxPar) == 1
+    origtxparunits = htxPar.Units;
+else
+    origtxparunits = '';
+end
 
 % change the units to cm
 set(hax, 'Units', 'centimeters');
 set(htx, 'Units', 'centimeters');
-cellfun(@set, htxPar, ...
-    repmat({'Units'}, numel(htxPar), 1), ...
-    repmat({'centimeters'}, numel(htxPar), 1));
+if numel(htxPar) > 1
+    cellfun(@set, htxPar, ...
+        repmat({'Units'}, numel(htxPar), 1), ...
+        repmat({'centimeters'}, numel(htxPar), 1));
+elseif numel(htxPar) == 1
+    set(htxPar, 'units', 'centimeters');
+end
 
 % get various position parameters of the axes
 hax_ti_ind = arrayfun(@(x) (isa(x, 'matlab.graphics.axis.Axes')), ...
@@ -185,7 +195,7 @@ end
 if ~iscell(origtxunits)
     origtxunits = {origtxunits};
 end
-if ~iscell(origtxparunits)
+if ~isempty(origtxparunits) && ~iscell(origtxparunits)
     origtxparunits = {origtxparunits};
 end
 
@@ -196,7 +206,11 @@ for i = 1:numel(hax)
 end
 for i = 1:numel(htx)
     set(htx(i), 'Units', origtxunits{i});
-    set(htxPar{i}, 'Units', origtxparunits{i});
+    if numel(htxPar) > 1
+        set(htxPar{i}, 'Units', origtxparunits{i});
+    elseif numel(htxPar) == 1
+        set(htxPar, 'Units', origtxparunits{i});
+    end
 end
 set(hfig, 'Units', origfigunits);
 
